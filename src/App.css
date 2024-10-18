@@ -1,0 +1,24 @@
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden; /* Prevent scrolling */
+}
+
+.container-fluid {
+    height: 100vh; /* Set container to full viewport height */
+}
+
+.canvas-container {
+    position: relative;
+    width: 100%;
+    height: calc(100vh - 100px); /* Adjust this value based on the height of your toolbox */
+    overflow: hidden; /* Hide overflow to prevent scrolling */
+}
+
+/* Optional: Make canvas responsive on smaller screens */
+@media (max-width: 768px) {
+    .canvas-container {
+        height: calc(100vh - 70px); /* Adjust for smaller screens */
+    }
+}
