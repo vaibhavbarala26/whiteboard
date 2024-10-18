@@ -121,7 +121,7 @@ const Canvas = () => {
                                         onClick={() => setColor(swatchColor)}
                                     >
                                         {color === swatchColor && (
-                                            <div className="w-full h-full border border-white rounded-circle" />
+                                            <div className="w-full h-full border-white  border-4  transform- rounded-circle" />
                                         )}
                                     </div>
                                 ))}
