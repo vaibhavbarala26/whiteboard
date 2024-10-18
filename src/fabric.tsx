@@ -33,22 +33,19 @@ const Canvas = () => {
         isDrawing.current = true;
         const pos = e.target.getStage().getPointerPosition();
         setLines((prevLines) => [...prevLines, { tool, points: [pos.x, pos.y], width, color }]);
-        // Save current state to undo stack
         setUndoStack((prevStack) => [...prevStack, [...lines]]);
         setRedoStack([]); // Clear redo stack on new action
     };
 
     const handleMouseMove = (e: any) => {
         if (!isDrawing.current) return;
-        
+
         const stage = e.target.getStage();
         const point = stage.getPointerPosition();
         const lastLine = lines[lines.length - 1];
-        
-        // Add new points to the last line
+
         const newPoints = lastLine.points.concat([point.x, point.y]);
 
-        // Update lines state without mutating the original array
         setLines((prevLines) => {
             const updatedLines = prevLines.slice(0, -1).concat({ ...lastLine, points: newPoints });
             return updatedLines;
@@ -57,6 +54,20 @@ const Canvas = () => {
 
     const handleMouseUp = () => {
         isDrawing.current = false;
+    };
+
+    const handleTouchStart = (e: any) => {
+        e.evt.preventDefault(); // Prevent scrolling
+        handleMouseDown(e);
+    };
+
+    const handleTouchMove = (e: any) => {
+        e.evt.preventDefault(); // Prevent scrolling
+        handleMouseMove(e);
+    };
+
+    const handleTouchEnd = () => {
+        handleMouseUp();
     };
 
     const clearCanvas = () => {
@@ -109,7 +120,6 @@ const Canvas = () => {
                                         style={{ backgroundColor: swatchColor }}
                                         onClick={() => setColor(swatchColor)}
                                     >
-                                        {/* Highlight selected color */}
                                         {color === swatchColor && (
                                             <div className="w-full h-full border border-white rounded-circle" />
                                         )}
@@ -173,6 +183,9 @@ const Canvas = () => {
                             onMouseDown={handleMouseDown}
                             onMouseMove={handleMouseMove}
                             onMouseUp={handleMouseUp}
+                            onTouchStart={handleTouchStart}
+                            onTouchMove={handleTouchMove}
+                            onTouchEnd={handleTouchEnd}
                         >
                             <Layer>
                                 {lines.map((line, i) => (
