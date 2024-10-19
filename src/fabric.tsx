@@ -180,6 +180,7 @@ const Canvas = () => {
                 <div className="col-12 position-relative">
                 <div className="position-absolute top-0 start-50 translate-middle-x m-3 z-50 d-flex flex-column flex-md-row align-items-center bg-white shadow-lg rounded p-3">
     <div className="d-flex flex-row gap-2 flex-wrap">
+        <h1>{socketid}</h1>
         <div className="d-flex flex-row gap-1">
             {colors.map((swatchColor) => (
                 <div
