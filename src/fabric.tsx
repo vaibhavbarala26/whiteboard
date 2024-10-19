@@ -111,6 +111,21 @@ const Canvas = () => {
         isDrawing.current = false;
     };
 
+    // Touch event handlers
+    const handleTouchStart = (e: any) => {
+        e.evt.preventDefault(); // Prevent default touch behavior
+        handleMouseDown(e);
+    };
+
+    const handleTouchMove = (e: any) => {
+        e.evt.preventDefault(); // Prevent default touch behavior
+        handleMouseMove(e);
+    };
+
+    const handleTouchEnd = () => {
+        handleMouseUp();
+    };
+
     const clearCanvas = () => {
         setLines([]);
         setUndoStack((prevStack) => [...prevStack, [...lines]]);
@@ -161,71 +176,71 @@ const Canvas = () => {
         <div className="container-fluid p-0">
             <div className="row flex">
                 <div className="col-12 position-relative">
-                    <div className="position-absolute top-0 start-50 translate-middle-x m-3 z-50 d-flex flex-row align-items-center bg-white shadow-lg rounded p-3">
-                        <div className="d-flex flex-row gap-2">
-                            <div className="d-flex flex-row gap-1">
-                                {colors.map((swatchColor) => (
-                                    <div
-                                        key={swatchColor}
-                                        className={`w-8 h-8 cursor-pointer rounded-circle`}
-                                        style={{ backgroundColor: swatchColor }}
-                                        onClick={() => setColor(swatchColor)}
-                                    >
-                                        {color === swatchColor && (
-                                            <div className="w-full h-full border border-white rounded-circle" />
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
+                <div className="position-absolute top-0 start-50 translate-middle-x m-3 z-50 d-flex flex-column flex-md-row align-items-center bg-white shadow-lg rounded p-3">
+    <div className="d-flex flex-row gap-2 flex-wrap">
+        <div className="d-flex flex-row gap-1">
+            {colors.map((swatchColor) => (
+                <div
+                    key={swatchColor}
+                    className={`w-8 h-8 cursor-pointer rounded-circle`}
+                    style={{ backgroundColor: swatchColor }}
+                    onClick={() => setColor(swatchColor)}
+                >
+                    {color === swatchColor && (
+                        <div className="w-full h-full border border-white rounded-circle" />
+                    )}
+                </div>
+            ))}
+        </div>
 
-                            <div className="d-flex flex-row gap-3">
-                                <FaPen
-                                    className={`text-4xl p-2 rounded-lg cursor-pointer ${tool === 'pen' ? 'border border-secondary' : ''}`}
-                                    onClick={() => setTool('pen')}
-                                />
-                                <CiEraser
-                                    className={`text-4xl p-2 rounded-lg cursor-pointer ${tool === 'eraser' ? 'border border-secondary' : ''}`}
-                                    onClick={() => setTool('eraser')}
-                                />
-                            </div>
+        <div className="d-flex flex-row gap-3">
+            <FaPen
+                className={`text-4xl p-2 rounded-lg cursor-pointer ${tool === 'pen' ? 'border border-secondary' : ''}`}
+                onClick={() => setTool('pen')}
+            />
+            <CiEraser
+                className={`text-4xl p-2 rounded-lg cursor-pointer ${tool === 'eraser' ? 'border border-secondary' : ''}`}
+                onClick={() => setTool('eraser')}
+            />
+        </div>
 
-                            <div className="d-flex flex-row gap-1">
-                                {widths.map((w) => (
-                                    <button
-                                        key={w}
-                                        className={`p-1 border rounded ${width === w ? 'bg-gray-300' : ''}`}
-                                        onClick={() => setWidth(w)}
-                                    >
-                                        {w}px
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
+        <div className="d-flex flex-row gap-1">
+            {widths.map((w) => (
+                <button
+                    key={w}
+                    className={`p-1 border rounded ${width === w ? 'bg-gray-300' : ''}`}
+                    onClick={() => setWidth(w)}
+                >
+                    {w}px
+                </button>
+            ))}
+        </div>
+    </div>
 
-                        <div className="d-flex flex-row align-items-center">
-                            <button
-                                className="p-1 ml-3 text-2xl border rounded"
-                                onClick={clearCanvas}
-                            >
-                                <MdDelete />
-                            </button>
-                            <button
-                                className="p-1 ml-3 text-2xl border rounded"
-                                onClick={undo}
-                            >
-                                <MdUndo />
-                            </button>
-                            <button
-                                className="p-1 ml-3 text-2xl border rounded"
-                                onClick={redo}
-                            >
-                                <MdRedo />
-                            </button>
-                            <button className="p-1 ml-3 text-2xl border rounded" onClick={handleDownload}>
-                                <MdDownload />
-                            </button>
-                        </div>
-                    </div>
+    <div className="d-flex flex-row align-items-center mt-3 mt-md-0">
+        <button
+            className="p-1 ml-3 text-2xl border rounded"
+            onClick={clearCanvas}
+        >
+            <MdDelete />
+        </button>
+        <button
+            className="p-1 ml-3 text-2xl border rounded"
+            onClick={undo}
+        >
+            <MdUndo />
+        </button>
+        <button
+            className="p-1 ml-3 text-2xl border rounded"
+            onClick={redo}
+        >
+            <MdRedo />
+        </button>
+        <button className="p-1 ml-3 text-2xl border rounded" onClick={handleDownload}>
+            <MdDownload />
+        </button>
+    </div>
+</div>
 
                     <div className="canvas-container">
                         <Stage
@@ -234,6 +249,9 @@ const Canvas = () => {
                             onMouseDown={handleMouseDown}
                             onMouseMove={handleMouseMove}
                             onMouseUp={handleMouseUp}
+                            onTouchStart={handleTouchStart} // Touch start event
+                            onTouchMove={handleTouchMove} // Touch move event
+                            onTouchEnd={handleTouchEnd} // Touch end event
                             ref={stageref}
                         >
                             <Layer>
@@ -254,8 +272,6 @@ const Canvas = () => {
                                 {Object.keys(cursorData).map((id) => {
                                     const cursor: Cursor = cursorData[id];
                                     return (
-                                        <>
-                                        
                                         <Line
                                             key={cursor.id}
                                             points={[cursor.x, cursor.y, cursor.x + 5, cursor.y]}
@@ -263,7 +279,6 @@ const Canvas = () => {
                                             strokeWidth={10}
                                             lineCap="round"
                                         />
-                                        </>
                                     );
                                 })}
                             </Layer>
