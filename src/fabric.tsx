@@ -31,6 +31,7 @@ const Canvas = () => {
     const [undoStack, setUndoStack] = useState<LineData[][]>([]);
     const [redoStack, setRedoStack] = useState<LineData[][]>([]);
     const isDrawing = useRef<boolean>(false);
+    const [socketid , setsocketid] = useState<string>("")
     const [color, setColor] = useState<string>('black');
     const [dimensions, setDimensions] = useState<{ width: number; height: number }>({
         width: window.innerWidth,
@@ -63,6 +64,7 @@ const Canvas = () => {
 
         socket.on('connect', () => {
             console.log('Connected to socket', socket.id);
+            setsocketid(String(socket.id))
         });
 
         socket.on("drawing", handleDrawing);
