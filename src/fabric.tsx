@@ -4,9 +4,8 @@ import { FaPen } from 'react-icons/fa';
 import { CiEraser } from 'react-icons/ci';
 import { MdDelete, MdUndo, MdRedo, MdDownload } from "react-icons/md";
 import "./App.css";
-import {io} from "socket.io-client"
-import Invitebyemail from './component/Invitebyemail';
 import { useSocket } from './Hooks/UseSocket';
+import Invitebyemail from './component/Invitebyemail';
 
 type Color = string;
 const colors: Color[] = ['red', 'blue', 'green', 'black', 'orange', 'yellow'];
@@ -66,16 +65,20 @@ const Canvas = () => {
             }));
         };
 
-        socket.on("drawing", handleDrawing);
-        socket.on("canvasData", handleCanvasData);
-        socket.on("canvasCleared", handleCanvasCleared);
-        socket.on("cursormove", handleCursor);
+        if (socket) {
+            socket.on("drawing", handleDrawing);
+            socket.on("canvasData", handleCanvasData);
+            socket.on("canvasCleared", handleCanvasCleared);
+            socket.on("cursormove", handleCursor);
+        }
 
         return () => {
-            socket.off("drawing", handleDrawing);
-            socket.off("canvasData", handleCanvasData);
-            socket.off("canvasCleared", handleCanvasCleared);
-            socket.off("cursormove", handleCursor);
+            if (socket) {
+                socket.off("drawing", handleDrawing);
+                socket.off("canvasData", handleCanvasData);
+                socket.off("canvasCleared", handleCanvasCleared);
+                socket.off("cursormove", handleCursor);
+            }
         };
     }, [socket]);
 
@@ -102,10 +105,11 @@ const Canvas = () => {
             return updatedLines;
         });
 
-        socket.emit("drawing", { tool, points: newPoints, width, color });
-
-        if (point) {
-            socket.emit("cursormove", { x: point.x, y: point.y, id: socket.id, color }); // Emit cursor position and color
+        if (socket) {
+            socket.emit("drawing", { tool, points: newPoints, width, color });
+            if (point) {
+                socket.emit("cursormove", { x: point.x, y: point.y, id: socket.id, color });
+            }
         }
     };
 
@@ -132,7 +136,9 @@ const Canvas = () => {
         setLines([]);
         setUndoStack((prevStack) => [...prevStack, [...lines]]);
         setRedoStack([]);
-        socket.emit('clearCanvas');
+        if (socket) {
+            socket.emit('clearCanvas');
+        }
     };
 
     const undo = () => {

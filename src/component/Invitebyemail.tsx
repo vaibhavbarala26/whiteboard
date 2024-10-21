@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { MdSend, MdCancel } from "react-icons/md";
 import useKeycloakAuth from "../Hooks/UseKeycloakAuth";
 import { Socket } from "socket.io-client";
