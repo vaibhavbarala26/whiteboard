@@ -5,6 +5,8 @@ import { CiEraser } from 'react-icons/ci';
 import { MdDelete, MdUndo, MdRedo, MdDownload } from "react-icons/md";
 import "./App.css";
 import { io } from 'socket.io-client';
+import Invitebyemail from './component/Invitebyemail';
+import User from './component/User';
 
 type Color = string;
 const colors: Color[] = ['red', 'blue', 'green', 'black', 'orange', 'yellow'];
@@ -31,7 +33,7 @@ const Canvas = () => {
     const [undoStack, setUndoStack] = useState<LineData[][]>([]);
     const [redoStack, setRedoStack] = useState<LineData[][]>([]);
     const isDrawing = useRef<boolean>(false);
-    const [socketid , setsocketid] = useState<string>("")
+    const [socketid, setsocketid] = useState<string>("")
     const [color, setColor] = useState<string>('black');
     const [dimensions, setDimensions] = useState<{ width: number; height: number }>({
         width: window.innerWidth,
@@ -177,75 +179,71 @@ const Canvas = () => {
     return (
         <div className="container-fluid p-0">
             <div className="row flex">
-                <div className="col-12 position-relative">
-                <div className="position-absolute top-0 start-50 translate-middle-x m-3 z-50 d-flex flex-column flex-md-row align-items-center bg-white shadow-lg rounded p-3">
-    <div className="d-flex flex-row gap-2 flex-wrap">
-        <h1>{socketid}</h1>
-        <div className="d-flex flex-row gap-1">
-            {colors.map((swatchColor) => (
-                <div
-                    key={swatchColor}
-                    className={`w-8 h-8 cursor-pointer rounded-circle`}
-                    style={{ backgroundColor: swatchColor }}
-                    onClick={() => setColor(swatchColor)}
-                >
-                    {color === swatchColor && (
-                        <div className="w-full h-full border border-white rounded-circle" />
-                    )}
-                </div>
-            ))}
-        </div>
+                <div className="col-12 position-relative flex flex-column md:flex-row">
+                    <div className="position-absolute top-0 start-50 translate-middle-x m-3 z-50 d-flex flex-column flex-md-row align-items-center bg-white shadow-lg rounded p-3">
+                        {/* Color Swatches */}
+                        <div className="d-flex flex-md-row flex-row gap-2 ">
+                            {colors.map((swatchColor) => (
+                                <div
+                                    key={swatchColor}
+                                    className={`w-8 h-8 cursor-pointer rounded-circle border border-light`}
+                                    style={{ backgroundColor: swatchColor }}
+                                    onClick={() => setColor(swatchColor)}
+                                >
+                                    {color === swatchColor && (
+                                        <div className="w-full h-full border border-white rounded-circle" />
+                                    )}
+                                </div>
+                            ))}
+                        </div>
 
-        <div className="d-flex flex-row gap-3">
-            <FaPen
-                className={`text-4xl p-2 rounded-lg cursor-pointer ${tool === 'pen' ? 'border border-secondary' : ''}`}
-                onClick={() => setTool('pen')}
-            />
-            <CiEraser
-                className={`text-4xl p-2 rounded-lg cursor-pointer ${tool === 'eraser' ? 'border border-secondary' : ''}`}
-                onClick={() => setTool('eraser')}
-            />
-        </div>
+                        {/* Tool Selection */}
+                        <div className="d-flex flex-row gap-3 mt-2 mt-md-0">
+                            <FaPen
+                                className={`text-4xl p-2 rounded-lg cursor-pointer ${tool === 'pen' ? 'border border-secondary' : ''}`}
+                                onClick={() => setTool('pen')}
+                            />
+                            <CiEraser
+                                className={`text-4xl p-2 rounded-lg cursor-pointer ${tool === 'eraser' ? 'border border-secondary' : ''}`}
+                                onClick={() => setTool('eraser')}
+                            />
+                        </div>
 
-        <div className="d-flex flex-row gap-1">
-            {widths.map((w) => (
-                <button
-                    key={w}
-                    className={`p-1 border rounded ${width === w ? 'bg-gray-300' : ''}`}
-                    onClick={() => setWidth(w)}
-                >
-                    {w}px
-                </button>
-            ))}
-        </div>
-    </div>
+                        {/* Width Selection */}
+                        <div className="d-flex flex-row gap-1 mt-2 mt-md-0">
+                            {widths.map((w) => (
+                                <button
+                                    key={w}
+                                    className={`p-1 border rounded ${width === w ? 'bg-gray-300' : ''}`}
+                                    onClick={() => setWidth(w)}
+                                >
+                                    {w}px
+                                </button>
+                            ))}
+                        </div>
 
-    <div className="d-flex flex-row align-items-center mt-3 mt-md-0">
-        <button
-            className="p-1 ml-3 text-2xl border rounded"
-            onClick={clearCanvas}
-        >
-            <MdDelete />
-        </button>
-        <button
-            className="p-1 ml-3 text-2xl border rounded"
-            onClick={undo}
-        >
-            <MdUndo />
-        </button>
-        <button
-            className="p-1 ml-3 text-2xl border rounded"
-            onClick={redo}
-        >
-            <MdRedo />
-        </button>
-        <button className="p-1 ml-3 text-2xl border rounded" onClick={handleDownload}>
-            <MdDownload />
-        </button>
-    </div>
-</div>
+                        {/* Action Buttons */}
+                        <div className="d-flex flex-row align-items-center mt-3 mt-md-0">
+                            <button className="p-1 ml-3 text-2xl border rounded" onClick={clearCanvas}>
+                                <MdDelete />
+                            </button>
+                            <button className="p-1 ml-3 text-2xl border rounded" onClick={undo}>
+                                <MdUndo />
+                            </button>
+                            <button className="p-1 ml-3 text-2xl border rounded" onClick={redo}>
+                                <MdRedo />
+                            </button>
+                            <button className="p-1 ml-3 text-2xl border rounded" onClick={handleDownload}>
+                                <MdDownload />
+                            </button>
+                        </div>
+                    </div>
 
-                    <div className="canvas-container">
+                    <div>
+                        <Invitebyemail />
+                    </div>
+
+                    <div className="canvas-container h-full max-w-full">
                         <Stage
                             width={dimensions.width}
                             height={dimensions.height}

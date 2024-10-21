@@ -1,12 +1,9 @@
 import Canvas from "./fabric"
 
-
 const App = () => {
+
   return (
-    <div>
-<Canvas></Canvas>
-    </div>
+    <Canvas></Canvas>
   )
 }
-
 export default App
