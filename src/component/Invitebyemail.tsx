@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { MdSend, MdCancel } from "react-icons/md";
-import useKeycloakAuth from "../Hooks/UseKeycloakAuth";
 import { Socket } from "socket.io-client";
 import { useSocket } from "../Hooks/UseSocket";
 
-const Invitebyemail = () => {
+const Invitebyemail = ({isAuthenticated , handleLogin , handleLogout , keycloak}) => {
   const [opendiv, setOpendiv] = useState<boolean>(false);
   const [email, setEmail] = useState<string>("");
   const socket: Socket | null = useSocket();
@@ -17,7 +16,7 @@ const Invitebyemail = () => {
   })
   })
   // Destructure the values from the useKeycloakAuth hook
-  const { isAuthenticated, keycloak, handleLogin, handleLogout } = useKeycloakAuth();
+  
 
   const handleInvite = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -38,10 +37,10 @@ const Invitebyemail = () => {
   };
 
   return (
-    <div className="position-relative">
+    <div className="">
       {!opendiv ? (
         <div
-          className="position-absolute md:top-12 md:left-20 top-72 left-1/2 translate-middle bg-white shadow-lg rounded-circle p-4 d-flex justify-content-center align-items-center cursor-pointer"
+          className="  bg-white shadow-lg rounded-circle p-4 d-flex justify-content-center align-items-center cursor-pointer"
           onClick={() => setOpendiv(true)}
           style={{ width: "80px", height: "80px", zIndex: 10 }}
         >
@@ -49,7 +48,7 @@ const Invitebyemail = () => {
         </div>
       ) : (
         <div
-          className="position-absolute top-[30rem] left-1/2 translate-middle md:top-[20rem] md:translate-x-1/2 md:translate-y-32 bg-white shadow-lg rounded p-6"
+          className=" bg-white shadow-lg rounded p-6"
           style={{ zIndex: 10 }}
         >
           <div className="flex justify-center">

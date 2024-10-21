@@ -1,29 +1,28 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSocket } from "../Hooks/UseSocket";
-import useKeycloakAuth from "../Hooks/UseKeycloakAuth";
-import "./Chat.css";
 
 interface Chats {
     name: string;
     message: string;
-    email?: string;
+    email?:string // This should be a string instead of an array
 }
 
-const Chat = () => {
+const Chat = ({keycloak}) => {
     const [openchat, setOpenchat] = useState<boolean>(false);
     const [mychats, setMychats] = useState<string>("");
     const [chats, setChats] = useState<Chats[]>([]);
     const socket = useSocket();
-    const keycloak = useKeycloakAuth();
+    
+    const chatEndRef = useRef<HTMLDivElement>(null);  // Ref for the last message
 
     const handleSend = (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         if (!mychats.trim()) return; // Prevent sending empty messages
 
         const chat = {
-            name: keycloak.keycloak?.tokenParsed?.preferred_username,
+            name: keycloak?.tokenParsed?.preferred_username,
             message: mychats,
-            email: keycloak.keycloak?.tokenParsed?.email,
+            email: keycloak?.tokenParsed?.email,
         };
 
         setMychats(""); // Clear input field after sending
@@ -42,16 +41,21 @@ const Chat = () => {
         };
     }, [socket]); // Only listen for socket changes
 
+    // Scroll to the last message
+    useEffect(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, [chats]);
+
     return (
         <>
             {openchat ? (
-                <div className="flex justify-center items-center h-screen bg-gray-100">
+                
                     <div className="border-2 w-[22rem] h-[32rem] flex flex-col rounded-lg shadow-lg bg-white">
                         {/* Header */}
                         <div className="border-b-2 border-gray-300 h-[10%] w-full flex justify-between items-center px-2">
                             <div></div>
                             <h1 className="font-bold text-xl">Chats</h1>
-                            <h1 className="cursor-pointer" onClick={()=>(setOpenchat(false))}>X</h1>
+                            <h1 className="cursor-pointer" onClick={() => setOpenchat(false)}>X</h1>
                         </div>
 
                         {/* Chat Body */}
@@ -60,22 +64,23 @@ const Chat = () => {
                                 {/* Chat messages */}
                                 <div>
                                     {chats.map((chat, index) => (
-                                        <div key={index} className={`flex items-center gap-1 ${keycloak.keycloak?.tokenParsed?.email === chat.email ? 'justify-end' : 'justify-start'}`}>
-                                            {keycloak.keycloak?.tokenParsed?.email !== chat.email && (
+                                        <div key={index} className={`flex items-center gap-1 ${keycloak?.tokenParsed?.email === chat.email ? 'justify-end' : 'justify-start'}`}>
+                                            {keycloak?.tokenParsed?.email !== chat.email && (
                                                 <div className="bg-white rounded-full h-8 w-8 mb-2 flex justify-center items-center">
                                                     {chat.name[0]}
                                                 </div>
                                             )}
-                                            <div className={`p-2 mb-2 rounded-lg max-w-[80%] ${keycloak.keycloak?.tokenParsed?.email === chat.email ? 'bg-black text-white self-start' : 'bg-gray-300 text-black'}`}>
+                                            <div className={`p-2 mb-2 rounded-lg max-w-[80%] ${keycloak?.tokenParsed?.email === chat.email ? 'bg-black text-white self-start' : 'bg-gray-300 text-black'}`}>
                                                 {chat.message}
                                             </div>
-                                            {keycloak.keycloak?.tokenParsed?.email === chat.email && (
+                                            {keycloak?.tokenParsed?.email === chat.email && (
                                                 <div className="bg-white rounded-full h-8 w-8 mb-2 flex justify-center items-center">
                                                     {chat.name[0]}
                                                 </div>
                                             )}
                                         </div>
                                     ))}
+                                    <div ref={chatEndRef} /> {/* Reference to the end of the chat */}
                                 </div>
                             </div>
 
@@ -98,12 +103,13 @@ const Chat = () => {
                             </div>
                         </div>
                     </div>
-                </div>
+                
             ) : (
-                <div onClick={()=>(setOpenchat(true))} className=" cursor-pointer shadow-lg h-20 w-20 rounded-full flex justify-center items-center">
-                    <h1 className="font-bold text-xl">Chat</h1>
-                </div>
+                null
             )}
+            {!openchat ? (<div onClick={() => setOpenchat(true)} className="cursor-pointer shadow-lg h-20 w-20 rounded-full text-sm font-bold flex justify-center items-center">
+                    Open Chat
+                </div>):(null)}
         </>
     );
 };
