@@ -1,0 +1,16 @@
+.chat-box {
+    background-color: #f0f0f0;
+    height: 22rem;
+    border-radius: 0.5rem;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    overflow-y: scroll;
+    /* Hide the scrollbar */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none;  /* Internet Explorer 10+ */
+}
+
+.chat-box::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, and Opera */
+}

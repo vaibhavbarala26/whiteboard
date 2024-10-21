@@ -1,9 +1,9 @@
-import Canvas from "./fabric"
+import Chat from "./component/Chat"
 
 const App = () => {
 
   return (
-    <Canvas></Canvas>
+    <Chat></Chat>
   )
 }
 export default App
