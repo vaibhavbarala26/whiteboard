@@ -30,7 +30,7 @@ const useKeycloakAuth = () => {
           keycloakInstance.updateToken(30).then(refreshed => {
             if (refreshed) {
               console.log('Token refreshed');
-              setToken(keycloakInstance.token);
+              setToken(keycloakInstance.token || null);
             } else {
               console.warn('Token could not be refreshed');
               handleLogout();

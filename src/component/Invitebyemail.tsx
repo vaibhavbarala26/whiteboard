@@ -7,7 +7,7 @@ import { useSocket } from "../Hooks/UseSocket";
 const Invitebyemail = () => {
   const [opendiv, setOpendiv] = useState<boolean>(false);
   const [email, setEmail] = useState<string>("");
-  const socket:Socket = useSocket()
+  const socket: Socket | null = useSocket();
 
   useEffect(()=>{
     if(!socket) return;
