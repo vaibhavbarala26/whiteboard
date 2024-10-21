@@ -1,12 +1,12 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Stage, Layer, Line } from 'react-konva';
 import { FaPen } from 'react-icons/fa';
 import { CiEraser } from 'react-icons/ci';
 import { MdDelete, MdUndo, MdRedo, MdDownload } from "react-icons/md";
 import "./App.css";
-import { io } from 'socket.io-client';
+import {io} from "socket.io-client"
 import Invitebyemail from './component/Invitebyemail';
-import User from './component/User';
+import { useSocket } from './Hooks/UseSocket';
 
 type Color = string;
 const colors: Color[] = ['red', 'blue', 'green', 'black', 'orange', 'yellow'];
@@ -33,7 +33,7 @@ const Canvas = () => {
     const [undoStack, setUndoStack] = useState<LineData[][]>([]);
     const [redoStack, setRedoStack] = useState<LineData[][]>([]);
     const isDrawing = useRef<boolean>(false);
-    const [socketid, setsocketid] = useState<string>("")
+  
     const [color, setColor] = useState<string>('black');
     const [dimensions, setDimensions] = useState<{ width: number; height: number }>({
         width: window.innerWidth,
@@ -42,9 +42,11 @@ const Canvas = () => {
     const [cursorData, setCursorData] = useState<{ [key: string]: Cursor }>({});
     const stageref = useRef<any>(null);
 
-    const socket = useMemo(() => io("http://localhost:1042"), []);
+    const socket = useSocket();
 
     useEffect(() => {
+        if (!socket) return;
+
         const handleDrawing = (data: LineData) => {
             setLines((prev) => [...prev, data]);
         };
@@ -64,11 +66,6 @@ const Canvas = () => {
             }));
         };
 
-        socket.on('connect', () => {
-            console.log('Connected to socket', socket.id);
-            setsocketid(String(socket.id))
-        });
-
         socket.on("drawing", handleDrawing);
         socket.on("canvasData", handleCanvasData);
         socket.on("canvasCleared", handleCanvasCleared);
@@ -78,9 +75,10 @@ const Canvas = () => {
             socket.off("drawing", handleDrawing);
             socket.off("canvasData", handleCanvasData);
             socket.off("canvasCleared", handleCanvasCleared);
-            socket.off("cursormove", handleCursor); // Clean up cursor event listener
+            socket.off("cursormove", handleCursor);
         };
     }, [socket]);
+
 
     const handleMouseDown = (e: any) => {
         isDrawing.current = true;
@@ -240,7 +238,7 @@ const Canvas = () => {
                     </div>
 
                     <div>
-                        <Invitebyemail />
+                        <Invitebyemail  />
                     </div>
 
                     <div className="canvas-container h-full max-w-full">

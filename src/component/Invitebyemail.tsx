@@ -1,11 +1,21 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MdSend, MdCancel } from "react-icons/md";
 import useKeycloakAuth from "../Hooks/UseKeycloakAuth";
+import { Socket } from "socket.io-client";
+import { useSocket } from "../Hooks/UseSocket";
 
 const Invitebyemail = () => {
   const [opendiv, setOpendiv] = useState<boolean>(false);
   const [email, setEmail] = useState<string>("");
+  const socket:Socket = useSocket()
 
+  useEffect(()=>{
+    if(!socket) return;
+  socket.on("connect" , ()=>{
+    console.log("connected in the invite compo" , socket.id);
+    
+  })
+  })
   // Destructure the values from the useKeycloakAuth hook
   const { isAuthenticated, keycloak, handleLogin, handleLogout } = useKeycloakAuth();
 
@@ -13,7 +23,10 @@ const Invitebyemail = () => {
     e.preventDefault();
     if (validateEmail(email)) {
       console.log(email); // Replace with actual invite logic (e.g., send an email)
+      
       setOpendiv(false);
+      if(!socket) return;
+      socket.emit("invite" , email)
     } else {
       alert("Please enter a valid email address.");
     }
