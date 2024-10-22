@@ -10,6 +10,7 @@ import { FaRegWindowClose } from "react-icons/fa";
 import Chat from './component/Chat';
 import useKeycloakAuth from './Hooks/UseKeycloakAuth';
 import ConnectedUsers from './component/ConnectedUsers';
+import Keycloak from 'keycloak-js';
 
 type Color = string;
 const colors: Color[] = ['red', 'blue', 'green', 'black', 'orange', 'yellow'];
@@ -28,8 +29,16 @@ interface Cursor {
     id: string,
     color: string;
 }
-
+interface InviteByEmailProps {
+    isAuthenticated: boolean;
+    handleLogin: () => void;
+    handleLogout: () => void;
+    keycloak: Keycloak | null;
+  }
+  
 const Canvas = () => {
+        const { keycloak, isAuthenticated, handleLogin, handleLogout } = useKeycloakAuth();
+
     const [tool, setTool] = useState<string>('pen');
     const [width, setWidth] = useState<number>(5);
     const [lines, setLines] = useState<LineData[]>([]);
@@ -177,7 +186,6 @@ const Canvas = () => {
         document.body.removeChild(link);
     };
 
-    const { keycloak, isAuthenticated, handleLogin, handleLogout } = useKeycloakAuth();
 
     return (
         <div className="container-fluid p-0">

@@ -1,13 +1,17 @@
 import { useEffect, useRef, useState } from "react";
 import { useSocket } from "../Hooks/UseSocket";
+import Keycloak from 'keycloak-js';
+
 import "./Chat.css"
 interface Chats {
     name: string;
     message: string;
     email?: string // This should be a string instead of an array
 }
-
-const Chat = ({ keycloak }) => {
+interface props{
+    keycloak : Keycloak
+}
+const Chat:React.FC<props> = ({keycloak})=> {
     const [openchat, setOpenchat] = useState<boolean>(false);
     const [mychats, setMychats] = useState<string>("");
     const [chats, setChats] = useState<Chats[]>([]);

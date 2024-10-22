@@ -1,13 +1,15 @@
 import { useEffect, useState } from "react";
 import { useSocket } from "../Hooks/UseSocket";
+import Keycloak from 'keycloak-js';
 
 interface Userdata {
     name: string;
     email: string;
     id: string;
+}interface props{
+    keycloak : Keycloak
 }
-
-const ConnectedUsers = ({ keycloak }) => {
+const ConnectedUsers:React.FC<props>=({ keycloak }) => {
     const [onlineUsers, setOnlineUsers] = useState<Userdata[]>([]);
     const [openDiv, setOpendiv] = useState<boolean>(false);
     const socket = useSocket();
