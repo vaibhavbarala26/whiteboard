@@ -10,116 +10,131 @@ import { FaRegWindowClose } from "react-icons/fa";
 import Chat from './component/Chat';
 import useKeycloakAuth from './Hooks/UseKeycloakAuth';
 import ConnectedUsers from './component/ConnectedUsers';
-import RecordRTC from 'recordrtc'; // Import RecordRTC
+import RecordRTC from 'recordrtc'; // Import RecordRTC for recording the canvas
+
+// Define color and width options
 type Color = string;
 const colors: Color[] = ['red', 'blue', 'green', 'black', 'orange', 'yellow'];
 const widths: number[] = [1, 5, 10, 15, 20];
 
+// Define the shape of a line object
 interface LineData {
-    tool: string;
-    width: number;
-    points: number[];
-    color: string;
+    tool: string;  // Tool used (pen or eraser)
+    width: number; // Width of the line
+    points: number[]; // Array of points for the line
+    color: string; // Color of the line
 }
 
+// Define the shape of a cursor object
 interface Cursor {
-    x: number,
-    y: number,
-    id: string,
-    color: string;
+    x: number, // X coordinate
+    y: number, // Y coordinate
+    id: string, // Unique identifier for the cursor
+    color: string; // Color of the cursor
 }
 
-  
 const Canvas = () => {
-        const { keycloak, isAuthenticated, handleLogin, handleLogout } = useKeycloakAuth();
+    const { keycloak, isAuthenticated, handleLogin, handleLogout } = useKeycloakAuth();
 
-    const [tool, setTool] = useState<string>('pen');
-    const [width, setWidth] = useState<number>(5);
-    const [lines, setLines] = useState<LineData[]>([]);
-    const [undoStack, setUndoStack] = useState<LineData[][]>([]);
-    const [redoStack, setRedoStack] = useState<LineData[][]>([]);
-    const isDrawing = useRef<boolean>(false);
-    const [opentool, setOpentool] = useState<boolean>(false);
-    const [color, setColor] = useState<string>('black');
+    // State management
+    const [tool, setTool] = useState<string>('pen'); // Current tool (pen or eraser)
+    const [width, setWidth] = useState<number>(5); // Current line width
+    const [lines, setLines] = useState<LineData[]>([]); // Lines drawn on the canvas
+    const [undoStack, setUndoStack] = useState<LineData[][]>([]); // Stack for undo functionality
+    const [redoStack, setRedoStack] = useState<LineData[][]>([]); // Stack for redo functionality
+    const isDrawing = useRef<boolean>(false); // Flag to track if drawing is in progress
+    const [opentool, setOpentool] = useState<boolean>(false); // State to toggle tool panel
+    const [color, setColor] = useState<string>('black'); // Current color for drawing
     const [dimensions, setDimensions] = useState<{ width: number; height: number }>({
         width: window.innerWidth,
         height: window.innerHeight,
-    });
-    const [cursorData, setCursorData] = useState<{ [key: string]: Cursor }>({});
-    const stageref = useRef<any>(null);
-    const [isRecording, setIsRecording] = useState<boolean>(false);
-    const recorderRef = useRef<any>(null);
+    }); // Canvas dimensions
+    const [cursorData, setCursorData] = useState<{ [key: string]: Cursor }>({}); // Cursor positions
+    const stageref = useRef<any>(null); // Reference to the stage (canvas)
+    const [isRecording, setIsRecording] = useState<boolean>(false); // Flag to track recording state
+    const recorderRef = useRef<any>(null); // Reference for the recorder
+
+    // Function to start recording the canvas
     const startRecording = () => {
         const canvasElements = stageref.current.getContainer().getElementsByTagName('canvas');
         
+        // Check if canvas elements exist
         if (canvasElements.length === 0) {
             console.error("No canvas elements found.");
             return;
         }
         
         const canvasElement = canvasElements[0];
-    
+
+        // Validate canvas element
         if (!canvasElement) {
             console.error("Canvas element not found!");
             return;
         }
-    
+
+        // Capture the stream from the canvas
         const canvasStream = canvasElement.captureStream(30); // Capture at 30 FPS
         if (!canvasStream) {
             console.error("Failed to capture stream from the canvas.");
             return;
         }
-    
+
+        // Initialize recorder
         const recorder = new RecordRTC(canvasStream, {
             type: 'video',
             mimeType: 'video/webm',
         });
-    
-        // Start recording after a slight delay
+
+        // Start recording after a slight delay to ensure content is rendered
         setTimeout(() => {
             recorder.startRecording();
-            recorderRef.current = recorder;
+            recorderRef.current = recorder; // Store recorder reference
             setIsRecording(true);
         }, 100); // Adjust the delay as needed
     };
-    
-    
+
+    // Function to stop recording and download the video
     const stopRecording = () => {
         if (recorderRef.current) {
             recorderRef.current.stopRecording(() => {
                 const blob = recorderRef.current.getBlob();
                 const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
+                const a = document.createElement('a'); // Create a link element
                 a.style.display = 'none';
                 a.href = url;
-                a.download = 'canvas-recording.webm';
+                a.download = 'canvas-recording.webm'; // Set filename
                 document.body.appendChild(a);
-                a.click();
+                a.click(); // Trigger download
                 window.URL.revokeObjectURL(url);
-                document.body.removeChild(a);
-                setIsRecording(false);
+                document.body.removeChild(a); // Clean up
+                setIsRecording(false); // Update recording state
             });
         } else {
             console.error("Recorder not initialized or already stopped.");
         }
     };
-    const socket = useSocket();
-    
+
+    const socket = useSocket(); // Hook for socket connection
+
     useEffect(() => {
         if (!socket) return;
 
+        // Handle incoming drawing data
         const handleDrawing = (data: LineData) => {
             setLines((prev) => [...prev, data]);
         };
 
+        // Handle incoming canvas data
         const handleCanvasData = (canvasData: LineData[]) => {
             setLines(canvasData);
         };
 
+        // Handle canvas cleared event
         const handleCanvasCleared = () => {
             setLines([]);
         };
 
+        // Handle cursor movement
         const handleCursor = (data: Cursor) => {
             setCursorData((prevCursorData) => ({
                 ...prevCursorData,
@@ -127,12 +142,14 @@ const Canvas = () => {
             }));
         };
 
+        // Set up socket event listeners
         socket.on("drawing", handleDrawing);
         socket.on("canvasData", handleCanvasData);
         socket.on("canvasCleared", handleCanvasCleared);
         socket.on("cursormove", handleCursor);
 
         return () => {
+            // Clean up socket listeners
             socket.off("drawing", handleDrawing);
             socket.off("canvasData", handleCanvasData);
             socket.off("canvasCleared", handleCanvasCleared);
@@ -140,28 +157,33 @@ const Canvas = () => {
         };
     }, [socket]);
 
+    // Mouse down event handler
     const handleMouseDown = (e: any) => {
-        isDrawing.current = true;
-        const pos = e.target.getStage().getPointerPosition();
-        const newLine = { tool, points: [pos.x, pos.y], width, color };
+        isDrawing.current = true; // Set drawing flag
+        const pos = e.target.getStage().getPointerPosition(); // Get mouse position
+        const newLine = { tool, points: [pos.x, pos.y], width, color }; // Create a new line
 
+        // Update undo and redo stacks
         setUndoStack((prevStack) => [...prevStack, [...lines]]);
         setRedoStack([]);
-        setLines((prevLines) => [...prevLines, newLine]);
+        setLines((prevLines) => [...prevLines, newLine]); // Add new line to state
     };
 
+    // Mouse move event handler
     const handleMouseMove = (e: any) => {
-        if (!isDrawing.current) return;
+        if (!isDrawing.current) return; // Do nothing if not drawing
 
         const stage = e.target.getStage();
-        const point = stage.getPointerPosition();
-        const lastLine = lines[lines.length - 1];
+        const point = stage.getPointerPosition(); // Get current mouse position
+        const lastLine = lines[lines.length - 1]; // Get the last line
 
         if (lastLine) {
+            // Update points of the last line
             const newPoints = lastLine.points.concat([point.x, point.y]);
             const updatedLines = [...lines.slice(0, -1), { ...lastLine, points: newPoints }];
-            setLines(updatedLines);
+            setLines(updatedLines); // Update lines state
 
+            // Emit drawing and cursor movement events to the socket
             if (socket) {
                 socket.emit("drawing", { tool, points: newPoints, width, color });
                 socket.emit("cursormove", { x: point.x, y: point.y, id: socket.id, color });
@@ -169,72 +191,78 @@ const Canvas = () => {
         }
     };
 
+    // Mouse up event handler
     const handleMouseUp = () => {
-        isDrawing.current = false;
+        isDrawing.current = false; // Reset drawing flag
     };
 
+    // Touch event handlers
     const handleTouchStart = (e: any) => {
         e.evt.preventDefault();
-        handleMouseDown(e);
+        handleMouseDown(e); // Call mouse down handler
     };
 
     const handleTouchMove = (e: any) => {
         e.evt.preventDefault();
-        handleMouseMove(e);
+        handleMouseMove(e); // Call mouse move handler
     };
 
     const handleTouchEnd = () => {
-        handleMouseUp();
+        handleMouseUp(); // Call mouse up handler
     };
 
+    // Function to clear the canvas
     const clearCanvas = () => {
-        setLines([]);
+        setLines([]); // Reset lines state
         setUndoStack((prevStack) => [...prevStack, [...lines]]);
         setRedoStack([]);
         if (socket) {
-            socket.emit('clearCanvas');
+            socket.emit('clearCanvas'); // Emit clear event to socket
         }
     };
 
+    // Function to undo last action
     const undo = () => {
         if (undoStack.length > 0) {
             const lastState = undoStack.pop();
-            setRedoStack((prevRedo) => [...prevRedo, lines]);
-            setLines(lastState || []);
-            setUndoStack([...undoStack]);
+            setRedoStack((prevRedo) => [...prevRedo, lines]); // Push current state to redo stack
+            setLines(lastState || []); // Restore last state
+            setUndoStack([...undoStack]); // Update undo stack
         }
     };
 
+    // Function to redo last undone action
     const redo = () => {
         if (redoStack.length > 0) {
             const nextState = redoStack.pop();
-            setUndoStack((prevUndo) => [...prevUndo, lines]);
-            setLines(nextState || []);
-            setRedoStack([...redoStack]);
+            setUndoStack((prevUndo) => [...prevUndo, lines]); // Push current state to undo stack
+            setLines(nextState || []); // Restore next state
+            setRedoStack([...redoStack]); // Update redo stack
         }
     };
 
+    // Handle window resize to adjust canvas dimensions
     useEffect(() => {
         const handleResize = () => {
             setDimensions({ width: window.innerWidth, height: window.innerHeight });
         };
 
-        window.addEventListener('resize', handleResize);
+        window.addEventListener('resize', handleResize); // Add event listener
         return () => {
-            window.removeEventListener('resize', handleResize);
+            window.removeEventListener('resize', handleResize); // Clean up event listener
         };
     }, []);
 
+    // Function to download the canvas as an image
     const handleDownload = () => {
-        const uri = stageref.current.toDataURL();
-        const link = document.createElement('a');
+        const uri = stageref.current.toDataURL(); // Get data URL of the canvas
+        const link = document.createElement('a'); // Create a link element
         link.href = uri;
-        link.download = 'canvas-image.png';
+        link.download = 'canvas-image.png'; // Set filename
         document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        link.click(); // Trigger download
+        document.body.removeChild(link); // Clean up
     };
-
 
     return (
         <div className="container-fluid p-0">
@@ -243,32 +271,35 @@ const Canvas = () => {
                     <div className="flex flex-row align-items-center justify-between mb-2 gap-2">
                         {/* Open Tool Button */}
                         <div className='flex flex-row gap-2'>
-                        {!opentool ? (
-                            <div className=' cursor-pointer shadow-lg h-20 w-20 rounded-full flex justify-center items-center  font-bold text-sm' onClick={() => setOpentool(true)}>
-                                Open Tool
+                            {!opentool ? (
+                                <div className='cursor-pointer shadow-lg h-20 w-20 rounded-full flex justify-center items-center font-bold text-sm' onClick={() => setOpentool(true)}>
+                                    Open Tool
+                                </div>
+                            ) : null}
+                            {/* Invite by Email Component */}
+                            <div>
+                                <Invitebyemail isAuthenticated={isAuthenticated} handleLogin={handleLogin} handleLogout={handleLogout} keycloak={keycloak} />
                             </div>
-                        ) : null}
-                        {/* Invite by Email Component */}
-                        <div>
-                            <Invitebyemail isAuthenticated={isAuthenticated} handleLogin={handleLogin} handleLogout={handleLogout} keycloak={keycloak} />
-                        </div>
-                        <div>
-                            <Chat keycloak={keycloak} />
-                        </div>
+                            <div>
+                                <Chat keycloak={keycloak} />
+                            </div>
                         </div>
                         <div className='max-w-full flex justify-end items-center gap-2'>
+                            {/* Start/Stop Recording Button */}
                             {!isRecording ? (
                                 <div>
-                                <button onClick={startRecording} className="btn btn-primary">Start Recording</button>
-                                </div> ) : (
-                                    <div>
-                                <button onClick={stopRecording} className="btn btn-danger">Stop Recording</button>
-                                </div> )}
+                                    <button onClick={startRecording} className="btn btn-primary">Start Recording</button>
+                                </div> 
+                            ) : (
+                                <div>
+                                    <button onClick={stopRecording} className="btn btn-danger">Stop Recording</button>
+                                </div>
+                            )}
                             <ConnectedUsers keycloak={keycloak}></ConnectedUsers>
                         </div>
-
                     </div>
-                    
+
+                    {/* Tool Options Panel */}
                     {opentool && (
                         <div className="position-absolute top-2 start-50 translate-middle-x m-3 z-50 d-flex flex-column flex-md-row align-items-center bg-white shadow-lg rounded p-3">
                             {/* Color Swatches */}
@@ -298,7 +329,6 @@ const Canvas = () => {
                                     onClick={() => setTool('eraser')}
                                 />
                             </div>
-                            
 
                             {/* Width Selection */}
                             <div className="d-flex flex-row gap-1 mt-2 mt-md-0">
@@ -334,6 +364,7 @@ const Canvas = () => {
                         </div>
                     )}
 
+                    {/* Canvas Area */}
                     <div className="canvas-container h-full max-w-full">
                         <Stage
                             width={dimensions.width}
@@ -360,6 +391,7 @@ const Canvas = () => {
                                     />
                                 ))}
                             </Layer>
+                            {/* Render cursors for connected users */}
                             <Layer>
                                 {Object.keys(cursorData).map((id) => {
                                     const cursor: Cursor = cursorData[id];
