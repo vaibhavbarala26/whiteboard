@@ -10,7 +10,7 @@ import { FaRegWindowClose } from "react-icons/fa";
 import Chat from './component/Chat';
 import useKeycloakAuth from './Hooks/UseKeycloakAuth';
 import ConnectedUsers from './component/ConnectedUsers';
-
+import RecordRTC from 'recordrtc'; // Import RecordRTC
 type Color = string;
 const colors: Color[] = ['red', 'blue', 'green', 'black', 'orange', 'yellow'];
 const widths: number[] = [1, 5, 10, 15, 20];
@@ -47,9 +47,64 @@ const Canvas = () => {
     });
     const [cursorData, setCursorData] = useState<{ [key: string]: Cursor }>({});
     const stageref = useRef<any>(null);
-
+    const [isRecording, setIsRecording] = useState<boolean>(false);
+    const recorderRef = useRef<any>(null);
+    const startRecording = () => {
+        const canvasElements = stageref.current.getContainer().getElementsByTagName('canvas');
+        
+        if (canvasElements.length === 0) {
+            console.error("No canvas elements found.");
+            return;
+        }
+        
+        const canvasElement = canvasElements[0];
+    
+        if (!canvasElement) {
+            console.error("Canvas element not found!");
+            return;
+        }
+    
+        const canvasStream = canvasElement.captureStream(30); // Capture at 30 FPS
+        if (!canvasStream) {
+            console.error("Failed to capture stream from the canvas.");
+            return;
+        }
+    
+        const recorder = new RecordRTC(canvasStream, {
+            type: 'video',
+            mimeType: 'video/webm',
+        });
+    
+        // Start recording after a slight delay
+        setTimeout(() => {
+            recorder.startRecording();
+            recorderRef.current = recorder;
+            setIsRecording(true);
+        }, 100); // Adjust the delay as needed
+    };
+    
+    
+    const stopRecording = () => {
+        if (recorderRef.current) {
+            recorderRef.current.stopRecording(() => {
+                const blob = recorderRef.current.getBlob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.style.display = 'none';
+                a.href = url;
+                a.download = 'canvas-recording.webm';
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                setIsRecording(false);
+            });
+        } else {
+            console.error("Recorder not initialized or already stopped.");
+        }
+    };
     const socket = useSocket();
-
+    
     useEffect(() => {
         if (!socket) return;
 
@@ -201,9 +256,16 @@ const Canvas = () => {
                             <Chat keycloak={keycloak} />
                         </div>
                         </div>
-                        <div className=' max-w-full flex justify-end'>
-                        <ConnectedUsers keycloak={keycloak}></ConnectedUsers>
-                    </div>
+                        <div className='max-w-full flex justify-end items-center gap-2'>
+                            {!isRecording ? (
+                                <div>
+                                <button onClick={startRecording} className="btn btn-primary">Start Recording</button>
+                                </div> ) : (
+                                    <div>
+                                <button onClick={stopRecording} className="btn btn-danger">Stop Recording</button>
+                                </div> )}
+                            <ConnectedUsers keycloak={keycloak}></ConnectedUsers>
+                        </div>
 
                     </div>
                     
@@ -236,6 +298,7 @@ const Canvas = () => {
                                     onClick={() => setTool('eraser')}
                                 />
                             </div>
+                            
 
                             {/* Width Selection */}
                             <div className="d-flex flex-row gap-1 mt-2 mt-md-0">
