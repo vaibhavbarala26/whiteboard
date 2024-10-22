@@ -9,7 +9,7 @@ interface Chats {
     email?: string // This should be a string instead of an array
 }
 interface props{
-    keycloak : Keycloak
+    keycloak : Keycloak | null
 }
 const Chat:React.FC<props> = ({keycloak})=> {
     const [openchat, setOpenchat] = useState<boolean>(false);

@@ -7,7 +7,7 @@ interface Userdata {
     email: string;
     id: string;
 }interface props{
-    keycloak : Keycloak
+    keycloak : Keycloak | null
 }
 const ConnectedUsers:React.FC<props>=({ keycloak }) => {
     const [onlineUsers, setOnlineUsers] = useState<Userdata[]>([]);

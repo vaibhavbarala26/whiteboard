@@ -10,7 +10,6 @@ import { FaRegWindowClose } from "react-icons/fa";
 import Chat from './component/Chat';
 import useKeycloakAuth from './Hooks/UseKeycloakAuth';
 import ConnectedUsers from './component/ConnectedUsers';
-import Keycloak from 'keycloak-js';
 
 type Color = string;
 const colors: Color[] = ['red', 'blue', 'green', 'black', 'orange', 'yellow'];
@@ -196,7 +195,7 @@ const Canvas = () => {
                         ) : null}
                         {/* Invite by Email Component */}
                         <div>
-                            <Invitebyemail isAuthenticated={isAuthenticated} handleLogin={handleLogin} handleLogout={handleLogout} />
+                            <Invitebyemail isAuthenticated={isAuthenticated} handleLogin={handleLogin} handleLogout={handleLogout} keycloak={keycloak} />
                         </div>
                         <div>
                             <Chat keycloak={keycloak} />
