@@ -6,6 +6,7 @@
 
 ![Screenshot 2024-10-22 210321](https://github.com/user-attachments/assets/38b9f53b-7063-4a84-b174-7cb97e58c566)
 
+![Screenshot 2024-10-22 210110](https://github.com/user-attachments/assets/b14c7d33-27a3-476b-9bc9-9fbbd9646d0f)
 
 # React + TypeScript + Vite
 
