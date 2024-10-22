@@ -29,12 +29,7 @@ interface Cursor {
     id: string,
     color: string;
 }
-interface InviteByEmailProps {
-    isAuthenticated: boolean;
-    handleLogin: () => void;
-    handleLogout: () => void;
-    keycloak: Keycloak | null;
-  }
+
   
 const Canvas = () => {
         const { keycloak, isAuthenticated, handleLogin, handleLogout } = useKeycloakAuth();
