@@ -1,18 +1,18 @@
 import { useEffect, useRef, useState } from "react";
 import { useSocket } from "../Hooks/UseSocket";
-
+import "./Chat.css"
 interface Chats {
     name: string;
     message: string;
-    email?:string // This should be a string instead of an array
+    email?: string // This should be a string instead of an array
 }
 
-const Chat = ({keycloak}) => {
+const Chat = ({ keycloak }) => {
     const [openchat, setOpenchat] = useState<boolean>(false);
     const [mychats, setMychats] = useState<string>("");
     const [chats, setChats] = useState<Chats[]>([]);
     const socket = useSocket();
-    
+
     const chatEndRef = useRef<HTMLDivElement>(null);  // Ref for the last message
 
     const handleSend = (e: React.FormEvent<HTMLFormElement>) => {
@@ -42,15 +42,15 @@ const Chat = ({keycloak}) => {
     }, [socket]); // Only listen for socket changes
 
     // Scroll to the last message
-    useEffect(() => {
-        chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }, [chats]);
+    // useEffect(() => {
+    //     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // }, [chats]);
 
     return (
         <>
             {openchat ? (
-                
-                    <div className="border-2 w-[22rem] h-[32rem] flex flex-col rounded-lg shadow-lg bg-white">
+                <div className="position-relative ">
+                    <div className={`position-absolute top-10 start-52 translate-middle-x m-3 z-50 border-2 w-[22rem] h-[32rem] flex flex-col rounded-lg shadow-lg bg-white`}>
                         {/* Header */}
                         <div className="border-b-2 border-gray-300 h-[10%] w-full flex justify-between items-center px-2">
                             <div></div>
@@ -59,8 +59,8 @@ const Chat = ({keycloak}) => {
                         </div>
 
                         {/* Chat Body */}
-                        <div className="h-[25rem] w-full p-4 flex flex-col justify-between">
-                            <div className="chat-box bg-gray-200 h-[22rem] border rounded-lg p-2 flex flex-col overflow-y-auto">
+                        <div className="h-[27rem] w-full p-4 flex flex-col justify-between">
+                            <div className="chat-box bg-gray-200 h-[25rem] border rounded-lg p-2 flex flex-col overflow-y-auto">
                                 {/* Chat messages */}
                                 <div>
                                     {chats.map((chat, index) => (
@@ -79,6 +79,7 @@ const Chat = ({keycloak}) => {
                                                 </div>
                                             )}
                                         </div>
+
                                     ))}
                                     <div ref={chatEndRef} /> {/* Reference to the end of the chat */}
                                 </div>
@@ -103,13 +104,13 @@ const Chat = ({keycloak}) => {
                             </div>
                         </div>
                     </div>
-                
+                </div>
             ) : (
                 null
             )}
             {!openchat ? (<div onClick={() => setOpenchat(true)} className="cursor-pointer shadow-lg h-20 w-20 rounded-full text-sm font-bold flex justify-center items-center">
-                    Open Chat
-                </div>):(null)}
+                Open Chat
+            </div>) : (null)}
         </>
     );
 };

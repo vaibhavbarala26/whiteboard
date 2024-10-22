@@ -47,12 +47,16 @@ const Invitebyemail = ({isAuthenticated , handleLogin , handleLogout , keycloak}
           <span className="fw-bold text-center">Invite</span>
         </div>
       ) : (
+       null
+      )}
+      { opendiv ? ( 
+        <div className="postion-relative">
         <div
-          className=" bg-white shadow-lg rounded p-6"
+          className=" bg-white shadow-lg rounded p-6  position-absolute top-32 start-40 translate-middle-x m-3 z-50 "
           style={{ zIndex: 10 }}
         >
-          <div className="flex justify-center">
-            <div>
+          <div className="flex justify-center  ">
+            <div className="">
               {isAuthenticated ? (
                 <div className="flex justify-center items-center gap-2 flex-col p-2 ">
                   <div className="bg rounded-full h-20 w-20 bg-black  text-white flex justify-center items-center text-5xl ">
@@ -93,7 +97,7 @@ const Invitebyemail = ({isAuthenticated , handleLogin , handleLogout , keycloak}
             </div>
           </div>
         </div>
-      )}
+        </div>):(null)}
     </div>
   );
 };

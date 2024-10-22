@@ -9,7 +9,7 @@ import { SocketProvider } from './Hooks/UseSocket.tsx';
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
   <SocketProvider>
-  <App></App>
+    <App></App>
   </SocketProvider>
   </StrictMode>,
 )

@@ -9,6 +9,7 @@ import Invitebyemail from './component/Invitebyemail';
 import { FaRegWindowClose } from "react-icons/fa";
 import Chat from './component/Chat';
 import useKeycloakAuth from './Hooks/UseKeycloakAuth';
+import ConnectedUsers from './component/ConnectedUsers';
 
 type Color = string;
 const colors: Color[] = ['red', 'blue', 'green', 'black', 'orange', 'yellow'];
@@ -85,7 +86,7 @@ const Canvas = () => {
         isDrawing.current = true;
         const pos = e.target.getStage().getPointerPosition();
         const newLine = { tool, points: [pos.x, pos.y], width, color };
-        
+
         setUndoStack((prevStack) => [...prevStack, [...lines]]);
         setRedoStack([]);
         setLines((prevLines) => [...prevLines, newLine]);
@@ -181,9 +182,10 @@ const Canvas = () => {
     return (
         <div className="container-fluid p-0">
             <div className="row flex">
-                <div className="col-12 position-relative flex flex-column md:flex-row">
-                    <div className="flex flex-row align-items-center mb-2 gap-2">
+                <div className="col-12 position-relative py-2 px-4 flex flex-column md:flex-row">
+                    <div className="flex flex-row align-items-center justify-between mb-2 gap-2">
                         {/* Open Tool Button */}
+                        <div className='flex flex-row gap-2'>
                         {!opentool ? (
                             <div className=' cursor-pointer shadow-lg h-20 w-20 rounded-full flex justify-center items-center  font-bold text-sm' onClick={() => setOpentool(true)}>
                                 Open Tool
@@ -191,15 +193,20 @@ const Canvas = () => {
                         ) : null}
                         {/* Invite by Email Component */}
                         <div>
-                        <Invitebyemail isAuthenticated={isAuthenticated} handleLogin={handleLogin} handleLogout={handleLogout} />
+                            <Invitebyemail isAuthenticated={isAuthenticated} handleLogin={handleLogin} handleLogout={handleLogout} />
                         </div>
                         <div>
-                        <Chat keycloak={keycloak} />
+                            <Chat keycloak={keycloak} />
                         </div>
+                        </div>
+                        <div className=' max-w-full flex justify-end'>
+                        <ConnectedUsers keycloak={keycloak}></ConnectedUsers>
                     </div>
 
+                    </div>
+                    
                     {opentool && (
-                        <div className="position-absolute top-0 start-50 translate-middle-x m-3 z-50 d-flex flex-column flex-md-row align-items-center bg-white shadow-lg rounded p-3">
+                        <div className="position-absolute top-2 start-50 translate-middle-x m-3 z-50 d-flex flex-column flex-md-row align-items-center bg-white shadow-lg rounded p-3">
                             {/* Color Swatches */}
                             <div className="d-flex flex-md-row flex-row gap-2">
                                 {colors.map((swatchColor) => (
